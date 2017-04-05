@@ -13,53 +13,54 @@ task main()
 
 	// Has to press killSwitch to start
 	{while(SensorValue[killSwitch] == 1){
-			}
+
+		}
 	}
 
 	ClearTimer(T1);
 
 
-	while(time1[T1] < 900000){
+	while(time1[T1] < 90000){
 		// Jog Left --Fast!
-		while(vexRT[Btn8L] == 1){
+		while(vexRT[Btn8R] == 1){
 			SensorValue[rightEncoder] = 0;
 			SensorValue[leftEncoder] = 0;
 
-			while(SensorValue[rightEncoder] < 10){
+	while(SensorValue[rightEncoder] > -10){
 				motor[rightMotor] = 127;
 				motor[leftMotor] = -127;
 			}
 		}
 		// Jog Right --Fast!
-		while(vexRT[Btn8R] == 1){
+		while(vexRT[Btn8L] == 1){
 			SensorValue[rightEncoder] = 0;
 			SensorValue[leftEncoder] = 0;
-			while(SensorValue[leftEncoder] < 10){
+			while(SensorValue[leftEncoder] > -10){
 				motor[rightMotor] = -127;
 				motor[leftMotor] = 127;
 			}
 		}
 		// Jog Left --Slow!
-		while(vexRT[Btn7L] == 1){
+		while(vexRT[Btn7R] == 1){
 			SensorValue[rightEncoder] = 0;
 			SensorValue[leftEncoder] = 0;
 
-			while(SensorValue[rightEncoder] < 5){
+			while(SensorValue[rightEncoder] > -5){
 				motor[rightMotor] = 63;
 				motor[leftMotor] = -63;
 			}
 		}
 		// Jog Right --Slow!
-		while(vexRT[Btn7R] == 1){
+		while(vexRT[Btn7L] == 1){
 			SensorValue[rightEncoder] = 0;
 			SensorValue[leftEncoder] = 0;
-			while(SensorValue[leftEncoder] < 5){
+			while(SensorValue[leftEncoder] > -5){
 				motor[rightMotor] = -63;
 				motor[leftMotor] = 63;
 			}
 		}
-		motor[leftMotor] = vexRT[Ch3];
-		motor[rightMotor] = vexRT[Ch3];
+		motor[leftMotor] = -vexRT[Ch3];
+		motor[rightMotor] = -vexRT[Ch3];
 
 		if(vexRT[Btn6U] == 1)
 		{
