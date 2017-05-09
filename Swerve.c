@@ -1,12 +1,12 @@
 #pragma config(Sensor, dgtl1,  FRLSwerveEnc,   sensorQuadEncoder)
-#pragma config(Sensor, dgtl3,  FRRSwerveEnc,   sensorQuadEncoder)
+#pragma config(Sensor, dgtl3,  ,               sensorQuadEncoder)
 #pragma config(Sensor, dgtl5,  RRLSwerveEnc,   sensorQuadEncoder)
 #pragma config(Sensor, dgtl7,  RRRSwerveEnc,   sensorQuadEncoder)
-#pragma config(Sensor, dgtl9,  DriveEnc,       sensorQuadEncoder)
+#pragma config(Sensor, dgtl9,  FRRSwerveEnc,   sensorQuadEncoder)
 #pragma config(Sensor, dgtl11, Sonar,          sensorSONAR_cm)
-#pragma config(Motor,  port2,           FRLSwerve,     tmotorVex269, openLoop)
+#pragma config(Motor,  port2,           FRLSwerve,     tmotorVex269, openLoop, reversed)
 #pragma config(Motor,  port3,           FRRSwerve,     tmotorVex269, openLoop)
-#pragma config(Motor,  port4,           RRLSwerve,     tmotorVex269, openLoop)
+#pragma config(Motor,  port4,           RRLSwerve,     tmotorVex269, openLoop, reversed)
 #pragma config(Motor,  port5,           RRRSwerve,     tmotorVex269, openLoop)
 #pragma config(Motor,  port6,           FRLDrive,      tmotorVex269, openLoop)
 #pragma config(Motor,  port7,           FRRDrive,      tmotorVex269, openLoop)
@@ -16,9 +16,9 @@
 
 task swerveWheelControl();
 
-task drive();
+void drive();
 
-float turnMultiplier = 3.0;
+float turnMultiplier = 6.0;
 
 void setDrive(float power)
 {
@@ -36,7 +36,7 @@ void resetSwerveEncoders()
 	SensorValue[RRRSwerveEnc] = 0;
 }
 
-int deadZone = 20;
+int deadZone = 10;
 
 float getJoystickAngle()
 {
@@ -53,20 +53,39 @@ float getJoystickAngle()
 		y = -y;
 	}
 
-	return atan(x/y);
+	int turn = radiansToDegrees(atan2(y, x));
+
+	if (x < 0) {
+		// turning left
+		return 90 - turn + 180;
+	} else {
+		return 90 - turn;
+	}
+}
+
+float getJoystickMagnitude()
+{
+	int x = vexRT[Ch1];
+	int y = vexRT[Ch2];
+
+	int direction = y < 0 ? -1 : 1;
+
+	//return direction * sqrt((x * x) + (y * y));
+	return vexRT[Ch3];
 }
 
 void wheelTurnToAngle(tMotor corner, tSensors sensor, float angle)
 {
-	float degreesRemaining = getJoystickAngle() - SensorValue[sensor];
-	int power = degreesRemaining * turnMultiplier;
+	motor[corner] = 0;
+	float degreesRemaining = angle - SensorValue[sensor];
+	int power = degreesRemaining / turnMultiplier;
 
 	motor[corner] = power;
 }
 
 void wheelsTurnToAngle()
 {
-	float angle = getJoystickAngle();
+	float angle = getJoystickAngle() * turnMultiplier;
 
 	wheelTurnToAngle(FRLSwerve, FRLSwerveEnc, angle);
 	wheelTurnToAngle(FRRSwerve, FRRSwerveEnc, angle);
@@ -80,7 +99,11 @@ task main()
 
 	StartTask(swerveWheelControl);
 
-	StartTask(drive);
+	//StartTask(drive);
+
+	while (true) {
+		drive();
+	}
 }
 
 task swerveWheelControl()
@@ -91,13 +114,10 @@ task swerveWheelControl()
 	}
 }
 
-task drive()
+void drive()
 {
 	while(true)
 	{
-		if (vexRT[Ch1] != 0 || vexRT[Ch2] != 0)
-		{
-			setDrive(sqrt((vexRT[Ch1] * vexRT[Ch1]) + (vexRT[Ch2] * vexRT[Ch2])));
-		}
+		setDrive(getJoystickMagnitude());
 	}
 }
