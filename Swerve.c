@@ -70,8 +70,7 @@ float getJoystickMagnitude()
 
 	int direction = y < 0 ? -1 : 1;
 
-	//return direction * sqrt((x * x) + (y * y));
-	return vexRT[Ch3];
+	return direction * sqrt((x * x) + (y * y));
 }
 
 void wheelTurnToAngle(tMotor corner, tSensors sensor, float angle)
