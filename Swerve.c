@@ -43,24 +43,18 @@ float getJoystickAngle()
 	int x = vexRT[Ch1];
 	int y = vexRT[Ch2];
 
-	if (abs(x) < deadZone || abs(y) < deadZone) {
+	if (abs(y) < deadZone) {
 		return 0;
 	}
 
-	if (y < 0) {
-		// angle reversed, flip direction
-		x = -x;
-		y = -y;
+	if (abs(x) < deadZone) {
+		return x > 0 ? 90 : -90;
 	}
 
-	int turn = radiansToDegrees(atan2(y, x));
+	// magic inversions to make atan function work
+	int turn = radiansToDegrees(atan2(x, y));
 
-	if (x < 0) {
-		// turning left
-		return 90 - turn + 180;
-	} else {
-		return 90 - turn;
-	}
+	return turn;
 }
 
 float getJoystickMagnitude()
@@ -70,12 +64,11 @@ float getJoystickMagnitude()
 
 	int direction = y < 0 ? -1 : 1;
 
-	return direction * sqrt((x * x) + (y * y));
+	return direction * sqrt((x * x) + (y * y)) + vexRT[Ch3];
 }
 
 void wheelTurnToAngle(tMotor corner, tSensors sensor, float angle)
 {
-	motor[corner] = 0;
 	float degreesRemaining = angle - SensorValue[sensor];
 	int power = degreesRemaining / turnMultiplier;
 
@@ -98,10 +91,8 @@ task main()
 
 	StartTask(swerveWheelControl);
 
-	//StartTask(drive);
-
 	while (true) {
-		drive();
+		setDrive(getJoystickMagnitude());
 	}
 }
 
@@ -110,13 +101,5 @@ task swerveWheelControl()
 	while(true)
 	{
 		wheelsTurnToAngle();
-	}
-}
-
-void drive()
-{
-	while(true)
-	{
-		setDrive(getJoystickMagnitude());
 	}
 }
